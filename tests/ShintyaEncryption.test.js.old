@@ -1,0 +1,465 @@
+/**
+ * SHINTYA ENCRYPTION LIBRARY - Test Suite
+ * 
+ * Comprehensive test suite untuk ShintyaEncryption library yang melakukan
+ * testing terhadap semua functionality encryption, decryption, validation,
+ * dan compatibility dengan ESP32 Arduino implementation.
+ * 
+ * Test Categories:
+ * - Basic Encryption/Decryption Tests
+ * - Dynamic Content Generation Tests  
+ * - Security Validation Tests
+ * - Error Handling Tests
+ * - Cross-Platform Compatibility Tests
+ * - Performance Tests
+ * 
+ * @author Shintya Package Delivery System
+ * @version 1.0.0
+ */
+
+// Import library yang akan di-test
+import ShintyaEncryption from '../libraries/javascript/ShintyaEncryption.js';
+
+/**
+ * Simple test runner implementation untuk Node.js environment
+ * Karena kita tidak menggunakan external testing framework
+ */
+class TestRunner {
+  constructor() {
+    this.tests = [];
+    this.results = {
+      passed: 0,
+      failed: 0,
+      total: 0
+    };
+  }
+
+  describe(suiteName, callback) {
+    console.log(`\n📋 Test Suite: ${suiteName}`);
+    console.log(''.padEnd(50, '='));
+    callback();
+  }
+
+  test(testName, callback) {
+    this.results.total++;
+    
+    try {
+      callback();
+      this.results.passed++;
+      console.log(`✅ ${testName}`);
+    } catch (error) {
+      this.results.failed++;
+      console.log(`❌ ${testName}`);
+      console.log(`   Error: ${error.message}`);
+    }
+  }
+
+  expect(actual) {
+    return {
+      toBe: (expected) => {
+        if (actual !== expected) {
+          throw new Error(`Expected ${expected}, but got ${actual}`);
+        }
+      },
+      toEqual: (expected) => {
+        if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+          throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+        }
+      },
+      not: {
+        toBe: (expected) => {
+          if (actual === expected) {
+            throw new Error(`Expected not to be ${expected}, but it was`);
+          }
+        },
+        toEqual: (expected) => {
+          if (JSON.stringify(actual) === JSON.stringify(expected)) {
+            throw new Error(`Expected not to equal ${JSON.stringify(expected)}, but it did`);
+          }
+        }
+      },
+      toBeTrue: () => {
+        if (actual !== true) {
+          throw new Error(`Expected true, but got ${actual}`);
+        }
+      },
+      toBeFalse: () => {
+        if (actual !== false) {
+          throw new Error(`Expected false, but got ${actual}`);
+        }
+      },
+      toThrow: () => {
+        let threw = false;
+        try {
+          if (typeof actual === 'function') {
+            actual();
+          }
+        } catch (error) {
+          threw = true;
+        }
+        if (!threw) {
+          throw new Error('Expected function to throw, but it did not');
+        }
+      }
+    };
+  }
+
+  printResults() {
+    console.log('\n📊 Test Results:');
+    console.log(''.padEnd(30, '='));
+    console.log(`Total Tests: ${this.results.total}`);
+    console.log(`Passed: ${this.results.passed} ✅`);
+    console.log(`Failed: ${this.results.failed} ❌`);
+    console.log(`Success Rate: ${((this.results.passed / this.results.total) * 100).toFixed(1)}%`);
+    
+    if (this.results.failed === 0) {
+      console.log('\n🎉 All tests passed!');
+    } else {
+      console.log('\n⚠️  Some tests failed. Please review the errors above.');
+    }
+  }
+}
+
+// Initialize test runner
+const testRunner = new TestRunner();
+
+// ==================== BASIC FUNCTIONALITY TESTS ====================
+
+testRunner.describe('Basic Encryption/Decryption Tests', () => {
+  
+  testRunner.test('should encrypt and decrypt user data correctly', () => {
+    const encryption = new ShintyaEncryption();
+    const originalData = {
+      email: "test@shintya.com",
+      nama: "Test User",
+      type: "user_profile"
+    };
+    
+    const encrypted = encryption.encrypt(originalData);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(decrypted.data.email).toBe(originalData.email);
+    testRunner.expect(decrypted.data.nama).toBe(originalData.nama);
+    testRunner.expect(decrypted.data.type).toBe(originalData.type);
+  });
+
+  testRunner.test('should handle empty data', () => {
+    const encryption = new ShintyaEncryption();
+    const emptyData = {};
+    
+    const encrypted = encryption.encrypt(emptyData);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(typeof decrypted.data).toBe('object');
+  });
+
+  testRunner.test('should handle string data', () => {
+    const encryption = new ShintyaEncryption();
+    const stringData = { message: "Hello World" };
+    
+    const encrypted = encryption.encrypt(stringData);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(decrypted.data.message).toBe("Hello World");
+  });
+
+});
+
+// ==================== DYNAMIC CONTENT TESTS ====================
+
+testRunner.describe('Dynamic Content Generation Tests', () => {
+  
+  testRunner.test('should generate different encrypted strings for same data', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted1 = encryption.encrypt(data);
+    const encrypted2 = encryption.encrypt(data);
+    
+    testRunner.expect(encrypted1).not.toBe(encrypted2);
+  });
+
+  testRunner.test('should include timestamp in metadata', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(typeof decrypted.metadata.timestamp).toBe('number');
+    testRunner.expect(decrypted.metadata.timestamp).not.toBe(0);
+  });
+
+  testRunner.test('should include nonce in metadata', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(typeof decrypted.metadata.nonce).toBe('string');
+    testRunner.expect(decrypted.metadata.nonce.length).toBe(8);
+  });
+
+  testRunner.test('should include session ID in metadata', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(typeof decrypted.metadata.sessionId).toBe('string');
+    testRunner.expect(decrypted.metadata.sessionId.startsWith('sess_')).toBeTrue();
+  });
+
+  testRunner.test('should include checksum in metadata', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(typeof decrypted.metadata.checksum).toBe('number');
+    testRunner.expect(decrypted.metadata.checksum).not.toBe(0);
+  });
+
+});
+
+// ==================== SECURITY VALIDATION TESTS ====================
+
+testRunner.describe('Security Validation Tests', () => {
+  
+  testRunner.test('should validate timestamp correctly', () => {
+    const encryption = new ShintyaEncryption();
+    
+    const currentTime = Date.now();
+    const oldTime = currentTime - 400000; // 6+ minutes ago (beyond default 5 min limit)
+    const futureTime = currentTime + 100000; // Future time
+    
+    testRunner.expect(encryption.validateTimestamp(currentTime)).toBeTrue();
+    testRunner.expect(encryption.validateTimestamp(oldTime)).toBeFalse();
+    testRunner.expect(encryption.validateTimestamp(futureTime)).toBeFalse();
+  });
+
+  testRunner.test('should detect invalid encrypted data', () => {
+    const encryption = new ShintyaEncryption();
+    
+    testRunner.expect(encryption.isValidEncryptedData("invalid_data")).toBeFalse();
+    testRunner.expect(encryption.isValidEncryptedData("")).toBeFalse();
+    testRunner.expect(encryption.isValidEncryptedData("123")).toBeFalse();
+  });
+
+  testRunner.test('should validate correct encrypted data', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    testRunner.expect(encryption.isValidEncryptedData(encrypted)).toBeTrue();
+  });
+
+  testRunner.test('should generate proper checksum', () => {
+    const encryption = new ShintyaEncryption();
+    
+    const checksum1 = encryption.generateChecksum("test data");
+    const checksum2 = encryption.generateChecksum("test data");
+    const checksum3 = encryption.generateChecksum("different data");
+    
+    testRunner.expect(checksum1).toBe(checksum2);
+    testRunner.expect(checksum1).not.toBe(checksum3);
+  });
+
+});
+
+// ==================== ERROR HANDLING TESTS ====================
+
+testRunner.describe('Error Handling Tests', () => {
+  
+  testRunner.test('should throw error for invalid secret key', () => {
+    testRunner.expect(() => {
+      new ShintyaEncryption("short"); // Less than 8 characters
+    }).toThrow();
+  });
+
+  testRunner.test('should throw error for invalid caesar shift', () => {
+    testRunner.expect(() => {
+      new ShintyaEncryption("VALID_SECRET_KEY", 0); // Invalid shift
+    }).toThrow();
+    
+    testRunner.expect(() => {
+      new ShintyaEncryption("VALID_SECRET_KEY", 30); // Invalid shift
+    }).toThrow();
+  });
+
+  testRunner.test('should handle decrypt with invalid data gracefully', () => {
+    const encryption = new ShintyaEncryption();
+    
+    testRunner.expect(() => {
+      encryption.decrypt("invalid_base64_data");
+    }).toThrow();
+  });
+
+  testRunner.test('should handle decrypt with corrupted data', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    let encrypted = encryption.encrypt(data);
+    // Corrupt the data
+    encrypted = encrypted.substring(0, encrypted.length - 5) + "XXXXX";
+    
+    testRunner.expect(() => {
+      encryption.decrypt(encrypted);
+    }).toThrow();
+  });
+
+});
+
+// ==================== LIBRARY INFO TESTS ====================
+
+testRunner.describe('Library Information Tests', () => {
+  
+  testRunner.test('should return correct version', () => {
+    const encryption = new ShintyaEncryption();
+    testRunner.expect(encryption.getVersion()).toBe("1.0.0");
+  });
+
+  testRunner.test('should return correct algorithm info', () => {
+    const encryption = new ShintyaEncryption();
+    testRunner.expect(encryption.getAlgorithmInfo()).toBe("XOR + Caesar + Base64");
+  });
+
+});
+
+// ==================== PERFORMANCE TESTS ====================
+
+testRunner.describe('Performance Tests', () => {
+  
+  testRunner.test('should encrypt data within reasonable time', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com", nama: "Test User" };
+    
+    const startTime = Date.now();
+    const encrypted = encryption.encrypt(data);
+    const endTime = Date.now();
+    
+    const executionTime = endTime - startTime;
+    testRunner.expect(executionTime < 100).toBeTrue(); // Should be under 100ms
+  });
+
+  testRunner.test('should decrypt data within reasonable time', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com", nama: "Test User" };
+    
+    const encrypted = encryption.encrypt(data);
+    
+    const startTime = Date.now();
+    const decrypted = encryption.decrypt(encrypted);
+    const endTime = Date.now();
+    
+    const executionTime = endTime - startTime;
+    testRunner.expect(executionTime < 100).toBeTrue(); // Should be under 100ms
+  });
+
+});
+
+// ==================== COMPATIBILITY TESTS ====================
+
+testRunner.describe('Cross-Platform Compatibility Tests', () => {
+  
+  testRunner.test('should generate Base64 compatible output', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted = encryption.encrypt(data);
+    
+    // Should be valid Base64 (ESP32 compatible)
+    const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
+    testRunner.expect(base64Pattern.test(encrypted)).toBeTrue();
+  });
+
+  testRunner.test('should handle special characters correctly', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { 
+      email: "test@shintya.com",
+      nama: "Test Üser with spëcial chars"
+    };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(decrypted.data.nama).toBe("Test Üser with spëcial chars");
+  });
+
+  testRunner.test('should handle Indonesian characters', () => {
+    const encryption = new ShintyaEncryption();
+    const data = { 
+      nama: "Budi Santoso",
+      alamat: "Jl. Merdeka No. 123, Jakarta"
+    };
+    
+    const encrypted = encryption.encrypt(data);
+    const decrypted = encryption.decrypt(encrypted);
+    
+    testRunner.expect(decrypted.data.nama).toBe("Budi Santoso");
+    testRunner.expect(decrypted.data.alamat).toBe("Jl. Merdeka No. 123, Jakarta");
+  });
+
+});
+
+// ==================== INTEGRATION TESTS ====================
+
+testRunner.describe('Integration Tests', () => {
+  
+  testRunner.test('should work with different secret keys', () => {
+    const encryption1 = new ShintyaEncryption("SECRET_KEY_1", 7);
+    const encryption2 = new ShintyaEncryption("SECRET_KEY_2", 7);
+    
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted1 = encryption1.encrypt(data);
+    const encrypted2 = encryption2.encrypt(data);
+    
+    // Should produce different outputs with different keys
+    testRunner.expect(encrypted1).not.toBe(encrypted2);
+    
+    // Each should decrypt correctly with their own key
+    const decrypted1 = encryption1.decrypt(encrypted1);
+    const decrypted2 = encryption2.decrypt(encrypted2);
+    
+    testRunner.expect(decrypted1.data.email).toBe(data.email);
+    testRunner.expect(decrypted2.data.email).toBe(data.email);
+  });
+
+  testRunner.test('should work with different caesar shifts', () => {
+    const encryption1 = new ShintyaEncryption("SAME_SECRET_KEY", 5);
+    const encryption2 = new ShintyaEncryption("SAME_SECRET_KEY", 10);
+    
+    const data = { email: "test@shintya.com" };
+    
+    const encrypted1 = encryption1.encrypt(data);
+    const encrypted2 = encryption2.encrypt(data);
+    
+    // Should produce different outputs with different shifts
+    testRunner.expect(encrypted1).not.toBe(encrypted2);
+    
+    // Each should decrypt correctly with their own shift
+    const decrypted1 = encryption1.decrypt(encrypted1);
+    const decrypted2 = encryption2.decrypt(encrypted2);
+    
+    testRunner.expect(decrypted1.data.email).toBe(data.email);
+    testRunner.expect(decrypted2.data.email).toBe(data.email);
+  });
+
+});
+
+// ==================== RUN ALL TESTS ====================
+
+console.log('🧪 Starting ShintyaEncryption Library Test Suite...\n');
+
+// Execute all test suites
+// Note: Tests are defined above and executed immediately when described
+
+// Print final results
+testRunner.printResults();
+
+// Export untuk usage sebagai module
+export default testRunner;

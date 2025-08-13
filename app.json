@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Shintya App",
+    "slug": "shintya-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon-packet.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/icon-packet.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F50057"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon-packet.png",
+        "backgroundColor": "#F50057"
+      },
+      "package": "com.shintya.shintyaapp"
+    },
+    "web": {
+      "favicon": "./assets/icon-packet.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "firebase-auth-template",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "19c9ca38-8705-4b84-97e9-422d51a90e5b"
+      }
+    }
+  }
+}

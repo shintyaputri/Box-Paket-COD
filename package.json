@@ -1,0 +1,80 @@
+{
+  "name": "shintya-app",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "clear": "expo start --clear",
+    "reset": "expo start --clear",
+    "test": "node .\\testing\\esp32-simulator.js",
+    "test-encryption": "node tests/runTests.js",
+    "cleanup": "node .\\firebase-cleanup\\cleanup.js",
+    "clean": "rimraf node_modules package-lock.json",
+    "reinstall": "npm run clean && npm install"
+  },
+  "dependencies": {
+    "@gluestack-ui/config": "^1.1.20",
+    "@gluestack-ui/themed": "^1.1.73",
+    "@react-native-aria/focus": "^0.2.9",
+    "@react-native-aria/interactions": "^0.2.16",
+    "@react-native-aria/overlays": "^0.3.15",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/datetimepicker": "8.3.0",
+    "@react-navigation/native": "^7.1.6",
+    "crypto-js": "^4.2.0",
+    "expo": "53.0.11",
+    "expo-clipboard": "^7.1.5",
+    "expo-constants": "~17.1.6",
+    "expo-crypto": "~14.1.5",
+    "expo-file-system": "~18.1.10",
+    "expo-linking": "~7.1.5",
+    "expo-router": "~5.1.0",
+    "expo-sharing": "~13.1.5",
+    "expo-status-bar": "~2.2.3",
+    "firebase": "^10.14.0",
+    "firebase-admin": "^13.4.0",
+    "inquirer": "^12.6.3",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
+    "lucide-react-native": "^0.515.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.3",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-get-random-values": "^1.11.0",
+    "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-qrcode-svg": "^6.3.15",
+    "react-native-quick-crypto": "^0.7.15",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-svg": "15.11.2",
+    "react-native-web": "^0.20.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "react-native-svg-transformer": "^1.5.1",
+    "rimraf": "^6.0.1"
+  },
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-chart-kit",
+          "react-native-keyboard-aware-scroll-view",
+          "firebase",
+          "firebase-admin",
+          "inquirer",
+          "jspdf",
+          "jspdf-autotable",
+          "xlsx"
+        ],
+        "listUnknownPackages": false
+      }
+    }
+  }
+}
